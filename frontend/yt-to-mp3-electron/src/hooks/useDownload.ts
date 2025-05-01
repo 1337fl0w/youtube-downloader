@@ -5,7 +5,7 @@ export const useDownload = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
 
-  const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+  const apiUrl = "http://localhost:5000";
 
   if (!apiUrl) {
     console.error("API URL is not defined.");

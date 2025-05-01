@@ -78,9 +78,9 @@ export default function AboutPage() {
                 🔐 Privacy Disclaimer
             </Typography>
             <Typography variant="body1" paragraph>
-                No data is stored on the
-                server after conversion. Once the file is processed, all data, including videos and audio files, are
-                completely deleted from the server to ensure user privacy.
+                No data is stored on a remote server. The app runs a local backend server to handle the conversion process.
+                Once the file is processed, all data, including videos and audio files, are
+                completely deleted from the App's locally running backend service.
             </Typography>
 
             <Typography variant="body1" paragraph>

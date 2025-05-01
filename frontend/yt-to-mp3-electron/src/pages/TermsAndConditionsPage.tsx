@@ -48,7 +48,7 @@ export default function TermsAndConditionsPage() {
                     4. Privacy and Data Collection
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    We respect your privacy. This Service does not collect any personal information unless you voluntarily provide it. Any data collected during the use of the Service is processed in accordance with our Privacy Policy.
+                    We respect your privacy. This Service does not collect any personal information.
                 </Typography>
 
                 <Divider sx={{ my: 4 }} />
