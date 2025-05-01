@@ -1,11 +1,11 @@
 import { app, BrowserWindow } from "electron";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawn } from "node:child_process";
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// const isDev = process.env.NODE_ENV === "development";
 
 // The built directory structure
 //
@@ -31,8 +31,10 @@ let win: BrowserWindow | null;
 
 function startBackendServer() {
   const backendPath = path.join(
-    process.env.APP_ROOT!,
-    "backend/win-x64/yt-to-mp3-server.exe"
+    app.isPackaged
+      ? path.join(process.resourcesPath, "app", "backend")
+      : path.join(__dirname, "..", "backend"),
+    "yt-to-mp3-server.exe"
   );
 
   const subprocess = spawn(backendPath, [], {
@@ -51,6 +53,8 @@ function createWindow() {
     },
   });
 
+  /* if (isDev) {
+  } */
   win.webContents.openDevTools();
 
   // Test active push message to Renderer-process.
