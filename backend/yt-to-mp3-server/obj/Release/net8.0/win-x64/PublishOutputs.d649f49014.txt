@@ -1,0 +1,7 @@
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\appsettings.Development.json
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\appsettings.json
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\yt-to-mp3-server.pdb
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\Tools\yt-dlp.exe
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\Tools\ffmpeg.exe
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\aspnetcorev2_inprocess.dll
+D:\Users\Anwender\repos\youtube-downloader\backend\yt-to-mp3-server\bin\Release\net8.0\win-x64\publish\yt-to-mp3-server.exe

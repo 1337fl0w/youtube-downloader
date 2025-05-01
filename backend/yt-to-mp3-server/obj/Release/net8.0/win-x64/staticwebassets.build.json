@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "KWCWYhuBpG8Mtua6W1N7830tiqerjO7gRZG9VXQb5b0=",
+  "Source": "yt-to-mp3-server",
+  "BasePath": "_content/yt-to-mp3-server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
