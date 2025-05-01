@@ -93,7 +93,7 @@ export default function TermsAndConditionsPage() {
                     9. Contact Information
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    If you have any questions regarding these Terms, please contact us at: support@youtube-mp3-converter.com
+                    If you have any questions regarding these Terms, please contact us at: **Add E-Mail address here**
                 </Typography>
 
                 <Typography variant="body1" paragraph>
