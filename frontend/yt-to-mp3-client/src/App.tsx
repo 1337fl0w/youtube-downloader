@@ -10,7 +10,7 @@ function App() {
       <AppBar position="fixed">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            YouTube MP3 Converter
+            SoundFlare
           </Typography>
           <Button color="inherit" component={Link} to="/">
             Download

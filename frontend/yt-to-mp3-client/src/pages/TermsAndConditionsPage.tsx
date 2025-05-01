@@ -2,7 +2,7 @@ import { Container, Typography, Divider, Box } from "@mui/material";
 
 export default function TermsAndConditionsPage() {
     return (
-        <Box sx={{ bgcolor: "#121212", color: "white" }}>
+        <Box sx={{ bgcolor: "#121212", color: "white", overflowY: "auto" }}>
             <Container sx={{ mt: 8 }}>
                 <Typography variant="h4" gutterBottom>
                     Terms and Conditions
@@ -16,7 +16,7 @@ export default function TermsAndConditionsPage() {
                     1. Introduction
                 </Typography>
                 <Typography variant="body1" paragraph>
-                    These terms and conditions ("Terms") govern your use of the YouTube MP3 Converter ("Service"). By using this Service, you agree to these Terms. If you do not agree with any part of these Terms, you must not use the Service.
+                    These terms and conditions ("Terms") govern your use of SoundFlare ("Service"). By using this Service, you agree to these Terms. If you do not agree with any part of these Terms, you must not use the Service.
                 </Typography>
 
                 <Divider sx={{ my: 4 }} />
