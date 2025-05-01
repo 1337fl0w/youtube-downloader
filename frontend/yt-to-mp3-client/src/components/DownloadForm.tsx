@@ -74,9 +74,6 @@ export default function DownloadForm() {
 
             {isValid && videoId && !isPlaylistUrl(url) && (
                 <Box mb={2}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Preview:
-                    </Typography>
                     <Box
                         sx={{
                             position: 'relative',

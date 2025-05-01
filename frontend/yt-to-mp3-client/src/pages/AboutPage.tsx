@@ -72,6 +72,24 @@ export default function AboutPage() {
                 <li>Content for which you've obtained express permission</li>
             </ul>
 
+            <Divider sx={{ my: 4 }} />
+
+            <Typography variant="h6" gutterBottom>
+                🔐 Privacy Disclaimer
+            </Typography>
+            <Typography variant="body1" paragraph>
+                No data is stored on the
+                server after conversion. Once the file is processed, all data, including videos and audio files, are
+                completely deleted from the server to ensure user privacy.
+            </Typography>
+
+            <Typography variant="body1" paragraph>
+                By using this app, you acknowledge and accept that no personal data or content is collected, stored, or
+                retained by the developer. You are solely responsible for any content you convert and download.
+            </Typography>
+
+            <Divider sx={{ my: 4 }} />
+
             <Typography variant="body2" color="text.secondary">
                 By using this app, you agree to take full responsibility for how you use it. The developer is not
                 liable for any misuse of the tool.
