@@ -4,24 +4,19 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { parseFile } from "music-metadata";
+import { audioQueue } from "../src/models/audioQueue";
+import { Song } from "../src/models/song";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === "development";
 
-// const isDev = process.env.NODE_ENV === "development";
+// Queue and playback management variables
+let audioQueue: Song[] = [];
+let isPlaying = false;
+let currentSongIndex = 0;
 
-// The built directory structure
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main.js
-// │ │ └── preload.mjs
-// │
 process.env.APP_ROOT = path.join(__dirname, "..");
 
-// 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
@@ -32,10 +27,12 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null;
 
-// This goes near the top:
+// Define the playlists directory
 const playlistsDir = path.join(process.env.APP_ROOT!, "playlists");
 
-// Ensure it exists
+const audioQueueFilePath = path.join(process.env.APP_ROOT!, "audioQueue.json");
+
+// Ensure the playlists directory exists
 if (!fs.existsSync(playlistsDir)) {
   fs.mkdirSync(playlistsDir);
 }
@@ -176,6 +173,94 @@ ipcMain.handle("delete-playlist", async (_event, playlistName: string) => {
   }
 });
 
+// Load the audio queue from a JSON file
+function loadAudioQueue(): Song[] {
+  if (fs.existsSync(audioQueueFilePath)) {
+    try {
+      const data = fs.readFileSync(audioQueueFilePath, "utf-8");
+      const parsedQueue = JSON.parse(data);
+      return parsedQueue.songs || []; // Return the 'songs' array from the saved queue
+    } catch (error) {
+      console.error("Failed to load audio queue:", error);
+      return []; // Return an empty queue if there's an error
+    }
+  }
+  return []; // Return an empty queue if the file doesn't exist
+}
+
+// Save the audio queue to a JSON file
+function saveAudioQueue(queue: Song[]): void {
+  const queueData = { songs: queue };
+  try {
+    fs.writeFileSync(
+      audioQueueFilePath,
+      JSON.stringify(queueData, null, 2),
+      "utf-8"
+    );
+  } catch (error) {
+    console.error("Failed to save audio queue:", error);
+  }
+}
+
+// Handle playing the queue
+ipcMain.handle("play-queue", () => {
+  if (audioQueue.length === 0) {
+    return { success: false, message: "Queue is empty." };
+  }
+
+  isPlaying = true;
+  playNextSong(); // Start playing the first song
+  return { success: true };
+});
+
+// Handle pausing the queue
+ipcMain.handle("pause-queue", () => {
+  isPlaying = false;
+  // Logic to pause the audio playback in the renderer
+  return { success: true };
+});
+
+// Handle adding a song to the queue
+ipcMain.handle("add-song-to-queue", (_event, songFilePath: string) => {
+  audioQueue.push({ filePath: songFilePath } as Song); // Assuming Song type has a filePath
+  saveAudioQueue(audioQueue); // Save the updated queue to file
+  return { success: true, message: "Song added to queue." };
+});
+
+// Handle removing a song from the queue
+ipcMain.handle("remove-song-from-queue", (_event, songFilePath: string) => {
+  audioQueue = audioQueue.filter((song) => song.filePath !== songFilePath);
+  saveAudioQueue(audioQueue); // Save the updated queue to file
+  return { success: true, message: "Song removed from queue." };
+});
+
+// Handle clearing the queue
+ipcMain.handle("clear-queue", () => {
+  audioQueue = [];
+  saveAudioQueue(audioQueue); // Save the cleared queue to file
+  return { success: true, message: "Queue cleared." };
+});
+
+// Function to play the next song
+function playNextSong() {
+  if (!isPlaying || currentSongIndex >= audioQueue.length) {
+    return;
+  }
+
+  const currentSong = audioQueue[currentSongIndex];
+  // Logic to start playing the current song
+  console.log(`Now playing: ${currentSong}`);
+
+  currentSongIndex++;
+
+  // Automatically play the next song once the current one finishes
+  // This can be hooked into the actual audio playback API
+  setTimeout(() => {
+    playNextSong();
+  }, 3000); // Assuming 3 seconds per song, adjust based on actual song duration
+}
+
+// Start the backend server
 function startBackendServer() {
   const backendPath = path.join(
     app.isPackaged
@@ -192,6 +277,7 @@ function startBackendServer() {
   subprocess.unref();
 }
 
+// Create the Electron window
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
@@ -206,7 +292,6 @@ function createWindow() {
     win.webContents.openDevTools();
   }
 
-  // Test active push message to Renderer-process.
   win.webContents.on("did-finish-load", () => {
     win?.webContents.send("main-process-message", new Date().toLocaleString());
   });
@@ -214,14 +299,11 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Quit when all windows are closed, except on macOS
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -230,14 +312,14 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
+// Initialize the app
 app.whenReady().then(() => {
+  audioQueue = loadAudioQueue();
   startBackendServer();
   createWindow();
 });

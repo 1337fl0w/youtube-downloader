@@ -20,14 +20,30 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FolderIcon from '@mui/icons-material/Folder';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Link } from 'react-router-dom';
 import { Playlist } from '../models/playlist';
+import { useAudioQueue } from '../hooks/useAudioQueue';
 
 export default function PlayerPage() {
     const [showDialog, setShowDialog] = useState(false);
     const [playlistName, setPlaylistName] = useState('');
     const [error, setError] = useState('');
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
+    const {
+        helloWorld
+        /* clearQueue,
+        setIsPlaying,
+        addPlaylistToQueue */
+    } = useAudioQueue();
+
+    const handlePlaybuttonClicked = async (playlistName: string) => {
+        /* setIsPlaying(false);
+        clearQueue();
+        addPlaylistToQueue(playlistName);
+        setIsPlaying(true); */
+        helloWorld();
+    }
 
     const fetchPlaylists = async () => {
         const result = await window.ipcRenderer.invoke("get-playlists");
@@ -81,10 +97,27 @@ export default function PlayerPage() {
                                 </IconButton>
                             }
                             disablePadding
+                            sx={{
+                                '&:hover .folder-icon': {
+                                    display: 'none',
+                                },
+                                '&:hover .play-button': {
+                                    display: 'inline-flex',
+                                },
+                            }}
                         >
                             <ListItemButton component={Link} to={`/playlist/${playlist.name}`}>
                                 <ListItemIcon>
-                                    <FolderIcon />
+                                    <FolderIcon className="folder-icon" />
+                                    <PlayArrowIcon
+                                        onClick={() => handlePlaybuttonClicked(playlist.name)}
+                                        className="play-button"
+                                        sx={{
+                                            display: 'none',
+                                            color: '#1976d2',
+                                            marginRight: 2,
+                                        }}
+                                    />
                                 </ListItemIcon>
                                 <ListItemText
                                     primary={playlist.name}
@@ -104,7 +137,7 @@ export default function PlayerPage() {
                     onClick={() => setShowDialog(true)}
                     sx={{
                         position: 'fixed',
-                        bottom: 24,
+                        bottom: 96,
                         right: 24,
                         zIndex: 1000,
                     }}

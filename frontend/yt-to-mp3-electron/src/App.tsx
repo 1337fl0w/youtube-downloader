@@ -5,6 +5,7 @@ import TermsAndConditionsPage from "./pages/TermsAndConditionsPage"; // Import t
 import { AppBar, Toolbar, Typography, Button, Box, GlobalStyles } from "@mui/material";
 import PlayerPage from "./pages/PlayerPage";
 import PlaylistPage from "./pages/PlaylistPage";
+import AudioPlayer from "./components/AudioPlayer";
 
 function App() {
   return (
@@ -56,15 +57,16 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ padding: 4 }}>
+        <Box sx={{ padding: 4, marginBottom: '160px' }}>
           <Routes>
             <Route path="/" element={<DownloadPage />} />
             <Route path="/player" element={<PlayerPage />} />
-            <Route path="/playlist/:playlistName" element={<PlaylistPage />} /> {/* Dynamic Playlist Route */}
+            <Route path="/playlist/:playlistName" element={<PlaylistPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/terms" element={<TermsAndConditionsPage />} />
           </Routes>
         </Box>
+        <AudioPlayer />
       </Box>
     </>
   );
