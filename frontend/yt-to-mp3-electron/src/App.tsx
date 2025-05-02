@@ -3,6 +3,8 @@ import DownloadPage from "./pages/DownloadPage";
 import AboutPage from "./pages/AboutPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage"; // Import the new page
 import { AppBar, Toolbar, Typography, Button, Box, GlobalStyles } from "@mui/material";
+import PlayerPage from "./pages/PlayerPage";
+import PlaylistPage from "./pages/PlaylistPage";
 
 function App() {
   return (
@@ -39,8 +41,11 @@ function App() {
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
               SoundFlare
             </Typography>
-            <Button color="inherit" component={Link} to="/" onClick={() => console.log("download button clicked")}>
+            <Button color="inherit" component={Link} to="/">
               Download
+            </Button>
+            <Button color="inherit" component={Link} to="/player">
+              Player
             </Button>
             <Button color="inherit" component={Link} to="/about">
               About
@@ -54,8 +59,10 @@ function App() {
         <Box sx={{ padding: 4 }}>
           <Routes>
             <Route path="/" element={<DownloadPage />} />
+            <Route path="/player" element={<PlayerPage />} />
+            <Route path="/playlist/:playlistName" element={<PlaylistPage />} /> {/* Dynamic Playlist Route */}
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/terms" element={<TermsAndConditionsPage />} /> {/* Add the route here */}
+            <Route path="/terms" element={<TermsAndConditionsPage />} />
           </Routes>
         </Box>
       </Box>
