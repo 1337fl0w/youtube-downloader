@@ -2,7 +2,7 @@ import { Container, Typography, Divider, Box } from "@mui/material";
 
 export default function TermsAndConditionsPage() {
     return (
-        <Box sx={{ bgcolor: "#121212", color: "white", overflowY: "auto" }}>
+        <Box sx={{ overflowY: "auto" }}>
             <Container sx={{ mt: 8 }}>
                 <Typography variant="h4" gutterBottom>
                     Terms and Conditions
