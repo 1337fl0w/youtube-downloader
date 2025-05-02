@@ -4,12 +4,13 @@ import e from "node:path";
 import { spawn as d } from "node:child_process";
 const t = e.dirname(p(import.meta.url));
 process.env.APP_ROOT = e.join(t, "..");
-const s = process.env.VITE_DEV_SERVER_URL, w = e.join(process.env.APP_ROOT, "dist-electron"), i = e.join(process.env.APP_ROOT, "dist");
+const s = process.env.VITE_DEV_SERVER_URL, P = e.join(process.env.APP_ROOT, "dist-electron"), i = e.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = s ? e.join(process.env.APP_ROOT, "public") : i;
 let o;
 function l() {
   const a = e.join(
     n.isPackaged ? e.join(process.resourcesPath, "app", "backend") : e.join(t, "..", "backend"),
+    // Development path
     "yt-to-mp3-server.exe"
   );
   d(a, [], {
@@ -21,7 +22,8 @@ function c() {
   o = new r({
     icon: e.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: e.join(t, "preload.mjs")
+      preload: e.join(t, "preload.mjs"),
+      webSecurity: !1
     }
   }), o.webContents.openDevTools(), o.webContents.on("did-finish-load", () => {
     o == null || o.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
@@ -37,7 +39,7 @@ n.whenReady().then(() => {
   l(), c();
 });
 export {
-  w as MAIN_DIST,
+  P as MAIN_DIST,
   i as RENDERER_DIST,
   s as VITE_DEV_SERVER_URL
 };

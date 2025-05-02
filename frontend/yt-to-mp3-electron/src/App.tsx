@@ -12,7 +12,7 @@ function App() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             SoundFlare
           </Typography>
-          <Button color="inherit" component={Link} to="/">
+          <Button color="inherit" component={Link} to="/" onClick={() => console.log("download button clicked")}>
             Download
           </Button>
           <Button color="inherit" component={Link} to="/about">

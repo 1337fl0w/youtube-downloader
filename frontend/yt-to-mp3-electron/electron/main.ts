@@ -32,8 +32,8 @@ let win: BrowserWindow | null;
 function startBackendServer() {
   const backendPath = path.join(
     app.isPackaged
-      ? path.join(process.resourcesPath, "app", "backend")
-      : path.join(__dirname, "..", "backend"),
+      ? path.join(process.resourcesPath, "app", "backend") // Path to backend folder in app root
+      : path.join(__dirname, "..", "backend"), // Development path
     "yt-to-mp3-server.exe"
   );
 
@@ -50,6 +50,7 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
+      webSecurity: false,
     },
   });
 
