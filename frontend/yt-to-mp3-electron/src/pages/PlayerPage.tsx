@@ -41,6 +41,7 @@ export default function PlayerPage() {
         clearQueue();
         addPlaylistToQueue(playlistName);
         setIsPlaying(true);
+        console.log('Playing playlist:', playlistName);
     }
 
     const fetchPlaylists = async () => {

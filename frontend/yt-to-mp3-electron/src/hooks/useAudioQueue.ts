@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Song } from "../models/song";
 
 export const useAudioQueue = () => {
@@ -6,21 +6,26 @@ export const useAudioQueue = () => {
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
-  const playQueue = async () => {
+  const playQueue = useCallback(async () => {
     setIsPlaying(true);
-    setQueue(await window.ipcRenderer.invoke("get-current-queue"));
-    setCurrentSong(await window.ipcRenderer.invoke("get-current-song"));
-    console.log("Playing songs from the queue...", queue);
-    console.log("Current song...", currentSong);
-    await window.ipcRenderer.invoke("play-queue", queue);
-  };
+    const currentQueue = await window.ipcRenderer.invoke("get-current-queue");
+    const song = await window.ipcRenderer.invoke("get-current-song");
 
-  const pauseQueue = async () => {
+    setQueue(currentQueue);
+    setCurrentSong(song);
+
+    console.log("Playing songs from the queue...", currentQueue);
+    console.log("Current song...", song);
+
+    await window.ipcRenderer.invoke("play-queue", currentQueue);
+  }, []);
+
+  const pauseQueue = useCallback(async () => {
     setIsPlaying(false);
     console.log("Paused queue...", queue);
 
     await window.ipcRenderer.invoke("pause-queue");
-  };
+  }, [queue]);
 
   const addSongToQueue = async (song: Song) => {
     setQueue((prevQueue) => [...prevQueue, song]);

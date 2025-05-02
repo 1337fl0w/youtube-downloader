@@ -7,7 +7,6 @@ import { useEffect } from "react";
 export default function AudioPlayer() {
     const { playQueue, pauseQueue, isPlaying, currentSong } = useAudioQueue();
 
-
     useEffect(() => {
         console.log("isPlaying changed state", isPlaying);
     }, [isPlaying]);
@@ -41,9 +40,9 @@ export default function AudioPlayer() {
                 Now Playing: {currentSong?.name || "No song selected"}
             </Typography>
             <Box>
-                {<IconButton color="inherit" onClick={togglePlayback}>
+                <IconButton color="inherit" onClick={togglePlayback}>
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                </IconButton>}
+                </IconButton>
             </Box>
         </Box>
     );
