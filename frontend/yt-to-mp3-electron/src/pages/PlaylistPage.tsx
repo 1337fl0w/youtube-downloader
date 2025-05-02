@@ -31,6 +31,7 @@ export default function PlaylistPage() {
 
     const {
         addPlaylistToQueue,
+        startPlayback,
         loading: queueLoading,
     } = useAudioQueue();
 
@@ -54,6 +55,7 @@ export default function PlaylistPage() {
             setSnackbarSeverity(success ? 'success' : 'error');
             setSnackbarMessage(success ? 'Playlist added to queue!' : 'Failed to add playlist to queue.');
             setSnackbarOpen(true);
+            startPlayback();
         }
     };
 
