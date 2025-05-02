@@ -15,7 +15,6 @@ import {
 import { Song } from '../models/song';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function PlaylistPage() {
     const { playlistName } = useParams();
@@ -37,15 +36,6 @@ export default function PlaylistPage() {
 
         fetchMp3Files();
     }, [playlistName]);
-
-    const deleteSong = async (songFilePath: string) => {
-        const result = await window.ipcRenderer.invoke('delete-song', songFilePath);
-        if (result.success) {
-            setSongs(songs.filter(song => song.filePath !== songFilePath));
-        } else {
-            alert(result.message);
-        }
-    };
 
     return (
         <Box sx={{ padding: 4, marginTop: '96px', position: 'relative', minHeight: 'calc(100vh - 96px)', overflow: 'hidden' }}>
