@@ -4,6 +4,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isDev = process.env.NODE_ENV === "development";
 
 // const isDev = process.env.NODE_ENV === "development";
 
@@ -32,8 +33,8 @@ let win: BrowserWindow | null;
 function startBackendServer() {
   const backendPath = path.join(
     app.isPackaged
-      ? path.join(process.resourcesPath, "app", "backend") // Path to backend folder in app root
-      : path.join(__dirname, "..", "backend"), // Development path
+      ? path.join(process.resourcesPath, "app", "backend")
+      : path.join(__dirname, "..", "backend"),
     "yt-to-mp3-server.exe"
   );
 
@@ -47,16 +48,17 @@ function startBackendServer() {
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path.join(process.env.VITE_PUBLIC, "favicon.ico"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
       webSecurity: false,
     },
   });
+  win.setMenu(null);
 
-  /* if (isDev) {
-  } */
-  win.webContents.openDevTools();
+  if (isDev) {
+    win.webContents.openDevTools();
+  }
 
   // Test active push message to Renderer-process.
   win.webContents.on("did-finish-load", () => {
