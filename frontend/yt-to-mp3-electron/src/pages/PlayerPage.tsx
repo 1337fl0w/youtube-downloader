@@ -23,7 +23,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Link } from 'react-router-dom';
 import { Playlist } from '../models/playlist';
-import { useAudioQueue } from '../hooks/useAudioQueue';
+import { useAudioQueueStore } from '../store/audioQueueStore';
 
 export default function PlayerPage() {
     const [showDialog, setShowDialog] = useState(false);
@@ -34,15 +34,15 @@ export default function PlayerPage() {
         clearQueue,
         setIsPlaying,
         addPlaylistToQueue
-    } = useAudioQueue();
+    } = useAudioQueueStore();
 
     const handlePlaybuttonClicked = async (playlistName: string) => {
-        setIsPlaying(false);
+        setIsPlaying(false);      // Optional, for UI
         clearQueue();
-        addPlaylistToQueue(playlistName);
-        setIsPlaying(true);
+        await addPlaylistToQueue(playlistName);  // This already triggers playQueue(), which sets isPlaying and currentSong
         console.log('Playing playlist:', playlistName);
     }
+
 
     const fetchPlaylists = async () => {
         const result = await window.ipcRenderer.invoke("get-playlists");

@@ -27,3 +27,4 @@ dist-ssr
 
 .env*
 .vs
+frontend/yt-to-mp3-electron/audioQueue.json
