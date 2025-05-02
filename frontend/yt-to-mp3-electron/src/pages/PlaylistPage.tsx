@@ -17,7 +17,7 @@ import {
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Song } from '../models/song';
-import { useAudioQueue } from '../hooks/useAudioQueue';
+import { useAudioQueue } from '../context/AudioQueueContext';
 
 export default function PlaylistPage() {
     const { playlistName } = useParams();
@@ -31,8 +31,6 @@ export default function PlaylistPage() {
 
     const {
         addPlaylistToQueue,
-        startPlayback,
-        loading: queueLoading,
     } = useAudioQueue();
 
     useEffect(() => {
@@ -49,13 +47,13 @@ export default function PlaylistPage() {
         fetchMp3Files();
     }, [playlistName]);
 
-    const handlePlayClick = async () => {
+    // Handle click on a song to add the entire playlist and set the current index
+    const handleSongClick = async (songIndex: number) => {
         if (playlistName) {
-            const success = await addPlaylistToQueue(playlistName);
+            const success = await addPlaylistToQueue(playlistName, songIndex); // Pass songIndex to set the currentIndex
             setSnackbarSeverity(success ? 'success' : 'error');
             setSnackbarMessage(success ? 'Playlist added to queue!' : 'Failed to add playlist to queue.');
             setSnackbarOpen(true);
-            startPlayback();
         }
     };
 
@@ -68,9 +66,6 @@ export default function PlaylistPage() {
                 <Typography variant="h6" sx={{ marginLeft: 1, flexGrow: 1 }}>
                     {playlistName}
                 </Typography>
-                <IconButton onClick={handlePlayClick} disabled={queueLoading}>
-                    {queueLoading ? <CircularProgress size={24} /> : <PlayArrowIcon />}
-                </IconButton>
             </Box>
 
             {loading ? (
@@ -95,7 +90,7 @@ export default function PlaylistPage() {
                                             },
                                         }}
                                     >
-                                        <ListItemButton>
+                                        <ListItemButton onClick={() => handleSongClick(index)}>
                                             <ListItemIcon>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                     <Typography

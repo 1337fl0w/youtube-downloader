@@ -3,7 +3,7 @@ import { Queue } from "../models/queue";
 
 const QUEUE_KEY = "audioQueue";
 
-export const useAudioQueue = () => {
+const useAudioQueue = () => {
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(new Audio());
 
@@ -28,6 +28,13 @@ export const useAudioQueue = () => {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   };
 
+  const playAudio = (src: string) => {
+    audioRef.current.src = src;
+    audioRef.current.play().catch((err) => {
+      console.error("Playback failed:", err);
+    });
+  };
+
   const updateQueueState = (updates: Partial<Queue>) => {
     const queue = getQueue();
     const newQueue = { ...queue, ...updates };
@@ -37,14 +44,17 @@ export const useAudioQueue = () => {
   };
 
   const startPlayback = () => {
-    console.log("Starting playback");
-    const queue = getQueue();
-    const current = queue.items[queue.currentIndex];
-    if (!current) return;
+    const raw = localStorage.getItem(QUEUE_KEY);
+    if (!raw) return;
 
-    audioRef.current.src = current.fileLocation;
-    audioRef.current.play();
-    updateQueueState({ isPlaying: true });
+    const queue: Queue = JSON.parse(raw);
+    if (queue.items.length === 0) return;
+
+    queue.currentIndex = 0;
+    queue.isPlaying = true;
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+
+    playAudio(queue.items[0].fileLocation);
   };
 
   const stopPlayback = () => {

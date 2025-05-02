@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import { HashRouter } from "react-router-dom";
+import { AudioQueueProvider } from "./context/AudioQueueContext";
 
 const theme = createTheme({
   palette: {
@@ -25,7 +26,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HashRouter>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <App />
+        <AudioQueueProvider>
+          <App />
+        </AudioQueueProvider>
       </ThemeProvider>
     </HashRouter>
   </StrictMode>

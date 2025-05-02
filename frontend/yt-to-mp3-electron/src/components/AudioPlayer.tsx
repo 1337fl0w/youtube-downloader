@@ -1,52 +1,21 @@
+// components/AudioPlayer.tsx
 import { Box, IconButton, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import { useState, useEffect } from "react";
-import { useAudioQueue } from "../hooks/useAudioQueue";
+import { useAudioQueue } from "../context/AudioQueueContext";
+import { useEffect } from "react";
 
 export default function AudioPlayer() {
-    const {
-        getQueue,
-        startPlayback,
-        stopPlayback,
-        nextSong,
-        previousSong,
-    } = useAudioQueue();
-
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [title, setTitle] = useState("");
+    const { queue, play, pause, next, previous } = useAudioQueue();
 
     useEffect(() => {
-        const queue = getQueue();
-        setIsPlaying(queue.isPlaying);
-        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
-    }, [getQueue]);
+        console.log("queue.isPlaying: ", queue.isPlaying);
+    }, [queue.isPlaying]);
 
     const handlePlayPause = () => {
-        const queue = getQueue();
-        if (queue.isPlaying) {
-            stopPlayback();
-            setIsPlaying(false);
-        } else {
-            startPlayback();
-            setIsPlaying(true);
-        }
-    };
-
-    const handleNext = () => {
-        nextSong();
-        const queue = getQueue();
-        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
-        setIsPlaying(true);
-    };
-
-    const handlePrevious = () => {
-        previousSong();
-        const queue = getQueue();
-        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
-        setIsPlaying(true);
+        queue.isPlaying ? pause() : play();
     };
 
     return (
@@ -67,16 +36,16 @@ export default function AudioPlayer() {
             }}
         >
             <Typography variant="body1" sx={{ ml: 2 }}>
-                Now Playing: {title}
+                Now Playing: {queue.items[queue.currentIndex]?.fileName ?? "(No song)"}
             </Typography>
             <Box>
-                <IconButton color="inherit" onClick={handlePrevious}>
+                <IconButton color="inherit" onClick={previous}>
                     <SkipPreviousIcon />
                 </IconButton>
                 <IconButton color="inherit" onClick={handlePlayPause}>
-                    {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+                    {queue.isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
                 </IconButton>
-                <IconButton color="inherit" onClick={handleNext}>
+                <IconButton color="inherit" onClick={next}>
                     <SkipNextIcon />
                 </IconButton>
             </Box>
