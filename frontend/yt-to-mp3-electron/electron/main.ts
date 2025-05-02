@@ -4,16 +4,10 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { parseFile } from "music-metadata";
-import { audioQueue } from "../src/models/audioQueue";
-import { Song } from "../src/models/song";
+import { QueueItem } from "../src/models/queueItem";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isDev = process.env.NODE_ENV === "development";
-
-// Queue and playback management variables
-let audioQueue: Song[] = [];
-let isPlaying = false;
-let currentSongIndex = 0;
 
 process.env.APP_ROOT = path.join(__dirname, "..");
 
@@ -29,8 +23,6 @@ let win: BrowserWindow | null;
 
 // Define the playlists directory
 const playlistsDir = path.join(process.env.APP_ROOT!, "playlists");
-
-const audioQueueFilePath = path.join(process.env.APP_ROOT!, "audioQueue.json");
 
 // Ensure the playlists directory exists
 if (!fs.existsSync(playlistsDir)) {
@@ -173,103 +165,46 @@ ipcMain.handle("delete-playlist", async (_event, playlistName: string) => {
   }
 });
 
-// Load the audio queue from a JSON file
-function loadAudioQueue(): Song[] {
-  if (fs.existsSync(audioQueueFilePath)) {
+// Add playlist to queue
+ipcMain.handle(
+  "add-playlist-to-queue",
+  async (_event, playlistName: string) => {
+    const playlistPath = path.join(playlistsDir, playlistName);
+
     try {
-      const data = fs.readFileSync(audioQueueFilePath, "utf-8");
-      const parsedQueue = JSON.parse(data);
-      return parsedQueue.songs || []; // Return the 'songs' array from the saved queue
-    } catch (error) {
-      console.error("Failed to load audio queue:", error);
-      return []; // Return an empty queue if there's an error
+      const files = fs
+        .readdirSync(playlistPath)
+        .filter((file) => path.extname(file).toLowerCase() === ".mp3");
+
+      const queueItems: QueueItem[] = [];
+
+      for (const file of files) {
+        const filePath = path.join(playlistPath, file);
+        const stats = fs.statSync(filePath);
+        let length = "Unknown";
+
+        try {
+          const metadata = await parseFile(filePath);
+          const duration = metadata.format.duration ?? 0;
+          const min = Math.floor(duration / 60);
+          const sec = Math.round(duration % 60);
+          length = `${min}:${sec.toString().padStart(2, "0")}`;
+        } catch {}
+
+        queueItems.push({
+          fileName: file,
+          fileSize: stats.size,
+          fileLocation: filePath,
+          audioLength: length,
+        });
+      }
+
+      return { success: true, items: queueItems };
+    } catch (err) {
+      return { success: false, message: (err as Error).message };
     }
   }
-  return []; // Return an empty queue if the file doesn't exist
-}
-
-// Save the audio queue to a JSON file
-function saveAudioQueue(queue: Song[]): void {
-  const queueData = { songs: queue };
-  try {
-    fs.writeFileSync(
-      audioQueueFilePath,
-      JSON.stringify(queueData, null, 2),
-      "utf-8"
-    );
-  } catch (error) {
-    console.error("Failed to save audio queue:", error);
-  }
-}
-
-// Handle playing the queue
-ipcMain.handle("play-queue", () => {
-  if (audioQueue.length === 0) {
-    return { success: false, message: "Queue is empty." };
-  }
-
-  isPlaying = true;
-  playNextSong();
-  return { success: true };
-});
-
-// Handle pausing the queue
-ipcMain.handle("pause-queue", () => {
-  isPlaying = false;
-  // Logic to pause the audio playback in the renderer
-  return { success: true };
-});
-
-// Handle adding a song to the queue
-ipcMain.handle("add-song-to-queue", (_event, songFilePath: string) => {
-  audioQueue.push({ filePath: songFilePath } as Song); // Assuming Song type has a filePath
-  saveAudioQueue(audioQueue); // Save the updated queue to file
-  return { success: true, message: "Song added to queue." };
-});
-
-// Handle removing a song from the queue
-ipcMain.handle("remove-song-from-queue", (_event, songFilePath: string) => {
-  audioQueue = audioQueue.filter((song) => song.filePath !== songFilePath);
-  saveAudioQueue(audioQueue); // Save the updated queue to file
-  return { success: true, message: "Song removed from queue." };
-});
-
-// Handle clearing the queue
-ipcMain.handle("clear-queue", () => {
-  audioQueue = [];
-  saveAudioQueue(audioQueue); // Save the cleared queue to file
-  return { success: true, message: "Queue cleared." };
-});
-
-// Handle fetching the current audio queue
-ipcMain.handle("get-current-queue", () => {
-  return { success: true, audioQueue };
-});
-
-// Handle fetching the current song
-ipcMain.handle("get-current-song", () => {
-  const currentSong = audioQueue[currentSongIndex];
-  return { success: true, currentSong };
-});
-
-// Function to play the next song
-function playNextSong() {
-  if (!isPlaying || currentSongIndex >= audioQueue.length) {
-    return;
-  }
-
-  const currentSong = audioQueue[currentSongIndex];
-  // Logic to start playing the current song
-  console.log(`Now playing: ${currentSong.name}`);
-
-  currentSongIndex++;
-
-  // Automatically play the next song once the current one finishes
-  // This can be hooked into the actual audio playback API
-  setTimeout(() => {
-    playNextSong();
-  }, 3000); // Assuming 3 seconds per song, adjust based on actual song duration
-}
+);
 
 // Start the backend server
 function startBackendServer() {
@@ -330,7 +265,6 @@ app.on("activate", () => {
 
 // Initialize the app
 app.whenReady().then(() => {
-  audioQueue = loadAudioQueue();
   startBackendServer();
   createWindow();
 });

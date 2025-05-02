@@ -1,86 +1,113 @@
-import { useState, useCallback } from "react";
-import { Song } from "../models/song";
+import { useRef, useState } from "react";
+import { Queue } from "../models/queue";
+
+const QUEUE_KEY = "audioQueue";
 
 export const useAudioQueue = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [queue, setQueue] = useState<Song[]>([]);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [loading, setLoading] = useState(false);
+  const audioRef = useRef(new Audio());
 
-  const playQueue = useCallback(async () => {
-    setIsPlaying(true);
-    const currentQueue = await window.ipcRenderer.invoke("get-current-queue");
-    const song = await window.ipcRenderer.invoke("get-current-song");
-
-    setQueue(currentQueue);
-    setCurrentSong(song);
-
-    console.log("Playing songs from the queue...", currentQueue);
-    console.log("Current song...", song);
-
-    await window.ipcRenderer.invoke("play-queue", currentQueue);
-  }, []);
-
-  const pauseQueue = useCallback(async () => {
-    setIsPlaying(false);
-    console.log("Paused queue...", queue);
-
-    await window.ipcRenderer.invoke("pause-queue");
-  }, [queue]);
-
-  const addSongToQueue = async (song: Song) => {
-    setQueue((prevQueue) => [...prevQueue, song]);
-    console.log(`Added song to the queue: ${song.name}`);
-
-    await window.ipcRenderer.invoke("add-song-to-queue", song);
+  const getQueue = (): Queue => {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    if (!raw) return { items: [], isPlaying: false, currentIndex: 0 };
+    try {
+      const parsed = JSON.parse(raw);
+      if (
+        typeof parsed === "object" &&
+        Array.isArray(parsed.items) &&
+        typeof parsed.isPlaying === "boolean" &&
+        typeof parsed.currentIndex === "number"
+      ) {
+        return parsed;
+      }
+    } catch {}
+    return { items: [], isPlaying: false, currentIndex: 0 };
   };
 
-  const addPlaylistToQueue = async (playlistName: string) => {
-    try {
-      const { success, songs } = await window.ipcRenderer.invoke(
-        "get-mp3-files",
-        playlistName
-      );
-      if (success) {
-        for (const song of songs) {
-          await addSongToQueue(song);
-        }
-        console.log(
-          `Added songs from playlist to the queue: ${playlistName}`,
-          songs
-        );
-        playQueue();
-      } else {
-        console.log(`Failed to add playlist: ${playlistName}`);
-      }
-    } catch (error) {
-      console.error("Error adding playlist to queue:", error);
+  const setQueue = (queue: Queue) => {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  };
+
+  const updateQueueState = (updates: Partial<Queue>) => {
+    const queue = getQueue();
+    const newQueue = { ...queue, ...updates };
+    setQueue(newQueue);
+    console.log("Updated queue state:", newQueue);
+    return newQueue;
+  };
+
+  const startPlayback = () => {
+    console.log("Starting playback");
+    const queue = getQueue();
+    const current = queue.items[queue.currentIndex];
+    if (!current) return;
+
+    audioRef.current.src = current.fileLocation;
+    audioRef.current.play();
+    updateQueueState({ isPlaying: true });
+  };
+
+  const stopPlayback = () => {
+    audioRef.current.pause();
+    updateQueueState({ isPlaying: false });
+  };
+
+  const nextSong = () => {
+    const queue = getQueue();
+    if (queue.currentIndex < queue.items.length - 1) {
+      const newIndex = queue.currentIndex + 1;
+      const nextItem = queue.items[newIndex];
+      audioRef.current.src = nextItem.fileLocation;
+      audioRef.current.play();
+      updateQueueState({ currentIndex: newIndex, isPlaying: true });
     }
   };
 
-  const removeSongFromQueue = (song: Song) => {
-    setQueue((prevQueue) => prevQueue.filter((item) => item !== song));
-    console.log(`Removed song from the queue: ${song.name}`);
+  const previousSong = () => {
+    const queue = getQueue();
+    if (queue.currentIndex > 0) {
+      const newIndex = queue.currentIndex - 1;
+      const prevItem = queue.items[newIndex];
+      audioRef.current.src = prevItem.fileLocation;
+      audioRef.current.play();
+      updateQueueState({ currentIndex: newIndex, isPlaying: true });
+    }
+  };
 
-    window.ipcRenderer.invoke("remove-song-from-queue", song);
+  const addPlaylistToQueue = async (playlistName: string): Promise<boolean> => {
+    setLoading(true);
+    clearQueue();
+    try {
+      const result = await window.ipcRenderer.invoke(
+        "add-playlist-to-queue",
+        playlistName
+      );
+      if (result.success && Array.isArray(result.items)) {
+        setQueue({ items: result.items, isPlaying: false, currentIndex: 0 });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to add playlist:", error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const clearQueue = () => {
-    setQueue([]);
-    console.log("Cleared the queue...");
-
-    window.ipcRenderer.invoke("clear-queue");
+    localStorage.removeItem(QUEUE_KEY);
+    audioRef.current.pause();
   };
 
   return {
-    playQueue,
-    pauseQueue,
-    addSongToQueue,
     addPlaylistToQueue,
-    removeSongFromQueue,
     clearQueue,
-    isPlaying,
-    setIsPlaying,
-    queue,
-    currentSong,
+    getQueue,
+    startPlayback,
+    stopPlayback,
+    nextSong,
+    previousSong,
+    loading,
   };
 };

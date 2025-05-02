@@ -11,10 +11,13 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
+    Snackbar,
+    Alert,
 } from '@mui/material';
-import { Song } from '../models/song';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { Song } from '../models/song';
+import { useAudioQueue } from '../hooks/useAudioQueue';
 
 export default function PlaylistPage() {
     const { playlistName } = useParams();
@@ -22,6 +25,14 @@ export default function PlaylistPage() {
     const [songs, setSongs] = useState<Song[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+    const {
+        addPlaylistToQueue,
+        loading: queueLoading,
+    } = useAudioQueue();
 
     useEffect(() => {
         const fetchMp3Files = async () => {
@@ -37,15 +48,27 @@ export default function PlaylistPage() {
         fetchMp3Files();
     }, [playlistName]);
 
+    const handlePlayClick = async () => {
+        if (playlistName) {
+            const success = await addPlaylistToQueue(playlistName);
+            setSnackbarSeverity(success ? 'success' : 'error');
+            setSnackbarMessage(success ? 'Playlist added to queue!' : 'Failed to add playlist to queue.');
+            setSnackbarOpen(true);
+        }
+    };
+
     return (
         <Box sx={{ padding: 4, marginTop: '96px', position: 'relative', minHeight: 'calc(100vh - 96px)', overflow: 'hidden' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <IconButton onClick={() => navigate('/player')}>
                     <ArrowBackIcon />
                 </IconButton>
-                <Typography variant="h6" sx={{ marginLeft: 1 }}>
+                <Typography variant="h6" sx={{ marginLeft: 1, flexGrow: 1 }}>
                     {playlistName}
                 </Typography>
+                <IconButton onClick={handlePlayClick} disabled={queueLoading}>
+                    {queueLoading ? <CircularProgress size={24} /> : <PlayArrowIcon />}
+                </IconButton>
             </Box>
 
             {loading ? (
@@ -110,6 +133,22 @@ export default function PlaylistPage() {
                     </List>
                 </Box>
             )}
+
+            {/* Snackbar */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity={snackbarSeverity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

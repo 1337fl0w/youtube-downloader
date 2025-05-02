@@ -1,23 +1,52 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
-import { useAudioQueueStore } from "../store/audioQueueStore";
-import { useEffect } from "react";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import { useState, useEffect } from "react";
+import { useAudioQueue } from "../hooks/useAudioQueue";
 
 export default function AudioPlayer() {
-    const { playQueue, pauseQueue, isPlaying, currentSong } = useAudioQueueStore();
+    const {
+        getQueue,
+        startPlayback,
+        stopPlayback,
+        nextSong,
+        previousSong,
+    } = useAudioQueue();
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [title, setTitle] = useState("");
 
     useEffect(() => {
-        if (isPlaying && !currentSong) {
-            console.warn("Playing started but currentSong is still null");
-        }
-        else {
-            console.log("Current song:", currentSong);
-        }
-    }, [isPlaying, currentSong]);
+        const queue = getQueue();
+        setIsPlaying(queue.isPlaying);
+        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
+    }, [getQueue]);
 
-    const togglePlayback = () => {
-        isPlaying ? pauseQueue() : playQueue();
+    const handlePlayPause = () => {
+        const queue = getQueue();
+        if (queue.isPlaying) {
+            stopPlayback();
+            setIsPlaying(false);
+        } else {
+            startPlayback();
+            setIsPlaying(true);
+        }
+    };
+
+    const handleNext = () => {
+        nextSong();
+        const queue = getQueue();
+        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
+        setIsPlaying(true);
+    };
+
+    const handlePrevious = () => {
+        previousSong();
+        const queue = getQueue();
+        setTitle(queue.items[queue.currentIndex]?.fileName ?? "(No song)");
+        setIsPlaying(true);
     };
 
     return (
@@ -38,11 +67,17 @@ export default function AudioPlayer() {
             }}
         >
             <Typography variant="body1" sx={{ ml: 2 }}>
-                Now Playing: {currentSong ? currentSong.name : "No song selected"}
+                Now Playing: {title}
             </Typography>
             <Box>
-                <IconButton color="inherit" onClick={togglePlayback}>
+                <IconButton color="inherit" onClick={handlePrevious}>
+                    <SkipPreviousIcon />
+                </IconButton>
+                <IconButton color="inherit" onClick={handlePlayPause}>
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+                </IconButton>
+                <IconButton color="inherit" onClick={handleNext}>
+                    <SkipNextIcon />
                 </IconButton>
             </Box>
         </Box>
