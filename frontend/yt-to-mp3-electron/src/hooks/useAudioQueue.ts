@@ -1,41 +1,49 @@
 import { useState } from "react";
-import { ipcRenderer } from "electron";
 import { Song } from "../models/song";
 
 export const useAudioQueue = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [queue, setQueue] = useState<Song[]>([]);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
   const playQueue = async () => {
     setIsPlaying(true);
+    setQueue(await window.ipcRenderer.invoke("get-current-queue"));
+    setCurrentSong(await window.ipcRenderer.invoke("get-current-song"));
     console.log("Playing songs from the queue...", queue);
-
-    ipcRenderer.send("play-queue", queue);
+    console.log("Current song...", currentSong);
+    await window.ipcRenderer.invoke("play-queue", queue);
   };
 
   const pauseQueue = async () => {
     setIsPlaying(false);
     console.log("Paused queue...", queue);
 
-    ipcRenderer.send("pause-queue");
+    await window.ipcRenderer.invoke("pause-queue");
   };
 
   const addSongToQueue = async (song: Song) => {
     setQueue((prevQueue) => [...prevQueue, song]);
     console.log(`Added song to the queue: ${song.name}`);
 
-    ipcRenderer.send("add-song-to-queue", song);
+    await window.ipcRenderer.invoke("add-song-to-queue", song);
   };
 
   const addPlaylistToQueue = async (playlistName: string) => {
     try {
-      const { success, songs } = await ipcRenderer.invoke(
+      const { success, songs } = await window.ipcRenderer.invoke(
         "get-mp3-files",
         playlistName
       );
       if (success) {
-        setQueue((prevQueue) => [...prevQueue, ...songs]);
-        console.log(`Added playlist to the queue: ${playlistName}`, queue);
+        for (const song of songs) {
+          await addSongToQueue(song);
+        }
+        console.log(
+          `Added songs from playlist to the queue: ${playlistName}`,
+          songs
+        );
+        playQueue();
       } else {
         console.log(`Failed to add playlist: ${playlistName}`);
       }
@@ -48,18 +56,14 @@ export const useAudioQueue = () => {
     setQueue((prevQueue) => prevQueue.filter((item) => item !== song));
     console.log(`Removed song from the queue: ${song.name}`);
 
-    ipcRenderer.send("remove-song-from-queue", song);
+    window.ipcRenderer.invoke("remove-song-from-queue", song);
   };
 
   const clearQueue = () => {
     setQueue([]);
     console.log("Cleared the queue...");
 
-    ipcRenderer.send("clear-queue");
-  };
-
-  const helloWorld = () => {
-    console.log("Hello World");
+    window.ipcRenderer.invoke("clear-queue");
   };
 
   return {
@@ -72,6 +76,6 @@ export const useAudioQueue = () => {
     isPlaying,
     setIsPlaying,
     queue,
-    helloWorld,
+    currentSong,
   };
 };

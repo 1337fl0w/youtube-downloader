@@ -31,18 +31,16 @@ export default function PlayerPage() {
     const [error, setError] = useState('');
     const [playlists, setPlaylists] = useState<Playlist[]>([]);
     const {
-        helloWorld
-        /* clearQueue,
+        clearQueue,
         setIsPlaying,
-        addPlaylistToQueue */
+        addPlaylistToQueue
     } = useAudioQueue();
 
     const handlePlaybuttonClicked = async (playlistName: string) => {
-        /* setIsPlaying(false);
+        setIsPlaying(false);
         clearQueue();
         addPlaylistToQueue(playlistName);
-        setIsPlaying(true); */
-        helloWorld();
+        setIsPlaying(true);
     }
 
     const fetchPlaylists = async () => {

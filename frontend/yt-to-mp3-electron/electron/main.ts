@@ -209,7 +209,7 @@ ipcMain.handle("play-queue", () => {
   }
 
   isPlaying = true;
-  playNextSong(); // Start playing the first song
+  playNextSong();
   return { success: true };
 });
 
@@ -241,6 +241,17 @@ ipcMain.handle("clear-queue", () => {
   return { success: true, message: "Queue cleared." };
 });
 
+// Handle fetching the current audio queue
+ipcMain.handle("get-current-queue", () => {
+  return { success: true, audioQueue };
+});
+
+// Handle fetching the current song
+ipcMain.handle("get-current-song", () => {
+  const currentSong = audioQueue[currentSongIndex];
+  return { success: true, currentSong };
+});
+
 // Function to play the next song
 function playNextSong() {
   if (!isPlaying || currentSongIndex >= audioQueue.length) {
@@ -249,7 +260,7 @@ function playNextSong() {
 
   const currentSong = audioQueue[currentSongIndex];
   // Logic to start playing the current song
-  console.log(`Now playing: ${currentSong}`);
+  console.log(`Now playing: ${currentSong.name}`);
 
   currentSongIndex++;
 

@@ -1,18 +1,24 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
-// import { useAudioQueue } from "../hooks/useAudioQueue";
+import { useAudioQueue } from "../hooks/useAudioQueue";
+import { useEffect } from "react";
 
 export default function AudioPlayer() {
-    // const { playQueue, pauseQueue, isPlaying } = useAudioQueue();
+    const { playQueue, pauseQueue, isPlaying, currentSong } = useAudioQueue();
 
-    /*     const togglePlayback = () => {
-            if (isPlaying) {
-                pauseQueue();
-            } else {
-                playQueue();
-            }
-        }; */
+
+    useEffect(() => {
+        console.log("isPlaying changed state", isPlaying);
+    }, [isPlaying]);
+
+    const togglePlayback = () => {
+        if (isPlaying) {
+            pauseQueue();
+        } else {
+            playQueue();
+        }
+    };
 
     return (
         <Box
@@ -28,16 +34,16 @@ export default function AudioPlayer() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                zIndex: 1300, // stays above other content
+                zIndex: 1300,
             }}
         >
             <Typography variant="body1" sx={{ ml: 2 }}>
-                Now Playing: (placeholder)
+                Now Playing: {currentSong?.name || "No song selected"}
             </Typography>
             <Box>
-                {/* <IconButton color="inherit" onClick={togglePlayback}>
+                {<IconButton color="inherit" onClick={togglePlayback}>
                     {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                </IconButton> */}
+                </IconButton>}
             </Box>
         </Box>
     );
