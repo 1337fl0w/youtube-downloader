@@ -4,6 +4,6 @@ Build command for the sever
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 
 Build command for client
-bpm run build
+npm run build
 
-This README will be added soon
+This README is subject to change. A fully fleshed out version is in the works and will be pushed soon.
